@@ -13,34 +13,33 @@ public class BikeController : MonoBehaviour
     [SerializeField] private float moveSpeed = 5f;
 
     [Header("Tilemap References")]
-    [SerializeField] private Tilemap roadTilemap;       // Road Map - where the bike can drive
-    [SerializeField] private Tilemap obstacleTilemap;   // Obstacle Map - blocked tiles
+    [SerializeField] private Tilemap roadTilemap;
+    [SerializeField] private Tilemap obstacleTilemap;
 
     [Header("Collision")]
-    [SerializeField] private float edgeOffset = 0.4f;  // Half-width of bike sprite — tune this in Inspector
+    [SerializeField] private float edgeOffset = 0.4f;
 
     private Rigidbody2D rb;
     private SpriteRenderer spriteRenderer;
     private Vector2 movement;
+    private PlayerHealth playerHealth;
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
+        playerHealth = GetComponent<PlayerHealth>();
         rb.freezeRotation = true;
     }
 
     void Update()
     {
-        // Read arrow keys or WASD
         movement.x = Input.GetAxisRaw("Horizontal");
         movement.y = Input.GetAxisRaw("Vertical");
 
-        // Normalize so diagonal movement isn't faster
         if (movement.sqrMagnitude > 1f)
             movement.Normalize();
 
-        // Flip sprite to face left/right
         if (movement.x > 0f)
             spriteRenderer.flipX = true;
         else if (movement.x < 0f)
@@ -51,13 +50,10 @@ public class BikeController : MonoBehaviour
     {
         if (roadTilemap == null)
         {
-            // No tilemap assigned — move freely
             rb.velocity = movement * moveSpeed;
             return;
         }
 
-        // Check the EDGE of the bike in the movement direction (not just the center)
-        // edgeOffset pushes the check point to the leading edge of the sprite
         Vector2 edgePos = rb.position + movement.normalized * edgeOffset;
         Vector2 nextPos = edgePos + movement * moveSpeed * Time.fixedDeltaTime;
         Vector3Int nextCell = roadTilemap.WorldToCell(nextPos);
@@ -68,7 +64,6 @@ public class BikeController : MonoBehaviour
         }
         else
         {
-            // Try sliding along road edges: check X and Y axes separately
             Vector2 moveX = new Vector2(movement.x, 0f);
             Vector2 moveY = new Vector2(0f, movement.y);
 
@@ -80,6 +75,17 @@ public class BikeController : MonoBehaviour
             if (roadTilemap.HasTile(cellY)) constrainedMovement.y = movement.y;
 
             rb.velocity = constrainedMovement * moveSpeed;
+        }
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        Debug.Log("BikeController collision with: " + collision.gameObject.name);
+        if (collision.gameObject.GetComponent<MotorcycleBehavior>() != null)
+        {
+            Debug.Log("Hit by motorcycle - triggering death");
+            if (playerHealth != null && !playerHealth.IsDead)
+                playerHealth.TakeDamage(playerHealth.MaxLives);
         }
     }
 }

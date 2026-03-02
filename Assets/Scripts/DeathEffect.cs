@@ -72,7 +72,8 @@ public class DeathEffect : MonoBehaviour
         }
 
         // Handle particle systems - auto-destroy when finished
-        ParticleSystem particles = smokeEffect.GetComponent<ParticleSystem>();
+        // Use GetComponentInChildren in case the ParticleSystem is on a child object
+        ParticleSystem particles = smokeEffect.GetComponentInChildren<ParticleSystem>();
         if (particles != null)
         {
             // If it's a particle system, destroy it after it finishes playing
@@ -82,7 +83,7 @@ public class DeathEffect : MonoBehaviour
         // Handle animator-based animations - auto-destroy when finished
         else
         {
-            Animator animator = smokeEffect.GetComponent<Animator>();
+            Animator animator = smokeEffect.GetComponentInChildren<Animator>();
             if (animator != null)
             {
                 // Start a coroutine on the smoke effect itself so it continues even if this GameObject is destroyed

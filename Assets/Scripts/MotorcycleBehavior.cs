@@ -28,7 +28,6 @@ public class MotorcycleBehavior : MonoBehaviour
 
     [Header("Damage")]
     [SerializeField] private float contactDamageRadius = 0.6f;
-    [SerializeField] private float damageCooldown = 1f;
 
     private Rigidbody2D rb;
     private SpriteRenderer spriteRenderer;
@@ -37,9 +36,10 @@ public class MotorcycleBehavior : MonoBehaviour
     private List<Vector3> currentPath = new List<Vector3>();
     private int currentWaypoint = 0;
     private float lastPathTime = -999f;
-    private float lastDamageTime;
     private Vector3 startPosition;
     private Vector3 wanderTarget;
+
+    private bool hasKilledPlayer = false;
 
     void Start()
     {
@@ -50,7 +50,6 @@ public class MotorcycleBehavior : MonoBehaviour
         rb.freezeRotation = true;
 
         player = GameObject.FindGameObjectWithTag("Player");
-        lastDamageTime = -damageCooldown;
         startPosition = transform.position;
         PickNewWanderTarget();
     }
@@ -81,13 +80,17 @@ public class MotorcycleBehavior : MonoBehaviour
             currentPath = null;
         }
 
-        // Contact damage
-        if (distToPlayer <= contactDamageRadius && Time.time >= lastDamageTime + damageCooldown)
+        // Instant kill on contact
+        if (!hasKilledPlayer && distToPlayer <= contactDamageRadius)
         {
-            lastDamageTime = Time.time;
             PlayerHealth playerHealth = player.GetComponent<PlayerHealth>();
-            if (playerHealth != null)
-                playerHealth.TakeDamage(1);
+            if (playerHealth != null && !playerHealth.IsDead)
+            {
+                hasKilledPlayer = true;
+                playerHealth.TakeDamage(playerHealth.MaxLives); // always kills regardless of lives
+                rb.velocity = Vector2.zero;
+                currentPath = null;
+            }
         }
     }
 
@@ -230,7 +233,7 @@ public class MotorcycleBehavior : MonoBehaviour
         transform.position = startPosition;
         if (rb != null) rb.velocity = Vector2.zero;
         currentPath = null;
-        lastDamageTime = -damageCooldown;
+        hasKilledPlayer = false;
         PickNewWanderTarget();
     }
 }
