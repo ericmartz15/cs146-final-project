@@ -54,6 +54,10 @@ public class GameManager : MonoBehaviour
         // Subscribe to boss death events (boss dying counts as a win condition).
         BossHealth.BossDied += HandleBossDeath;
         Debug.Log("GameManager: Subscribed to BossHealth.BossDied event");
+
+        // Subscribe to goal zone event (player reaches destination).
+        GoalZone.PlayerReachedGoal += HandleGoalReached;
+        Debug.Log("GameManager: Subscribed to GoalZone.PlayerReachedGoal event");
         
         // Hide restart text initially
         if (restartTextUI != null)
@@ -85,6 +89,7 @@ public class GameManager : MonoBehaviour
         CoinCollector.CoinCollected -= HandleCoinCollected;
         PlayerHealth.PlayerDied -= HandlePlayerDeath;
         BossHealth.BossDied -= HandleBossDeath;
+        GoalZone.PlayerReachedGoal -= HandleGoalReached;
     }
 
     private void CountAllCoins()
@@ -121,6 +126,13 @@ public class GameManager : MonoBehaviour
     }
 
     private void HandleBossDeath()
+    {
+        if (gameWon || gameLost) return; // Game already ended, ignore
+
+        WinGame();
+    }
+
+    private void HandleGoalReached()
     {
         if (gameWon || gameLost) return; // Game already ended, ignore
 
