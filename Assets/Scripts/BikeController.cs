@@ -1,6 +1,5 @@
 // BikeController.cs
 // Smooth top-down movement for the player bike.
-// Checks road tilemap before moving, same approach as MoveScript.
 
 using System.Collections;
 using UnityEngine;
@@ -27,6 +26,7 @@ public class BikeController : MonoBehaviour
 
     private float currentSpeed;
     private Coroutine activeBoost;
+    private bool isStopped = false;
 
     void Start()
     {
@@ -39,6 +39,8 @@ public class BikeController : MonoBehaviour
 
     void Update()
     {
+        if (isStopped) return;
+
         movement.x = Input.GetAxisRaw("Horizontal");
         movement.y = Input.GetAxisRaw("Vertical");
 
@@ -53,6 +55,12 @@ public class BikeController : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (isStopped)
+        {
+            rb.velocity = Vector2.zero;
+            return;
+        }
+
         if (roadTilemap == null)
         {
             rb.velocity = movement * currentSpeed;
@@ -94,27 +102,34 @@ public class BikeController : MonoBehaviour
     }
 
     /// <summary>
-    /// Called by CoffeePickup when the player collects a coffee.
-    /// Temporarily multiplies move speed by speedMultiplier for boostDuration seconds.
-    /// If a boost is already active, it is replaced by the new one.
+    /// Stops the bike for a given duration — called when hitting a pedestrian.
     /// </summary>
+    public void StopBriefly(float duration)
+    {
+        if (activeBoost != null) StopCoroutine(activeBoost);
+        StartCoroutine(StopCoroutine(duration));
+    }
+
+    private IEnumerator StopCoroutine(float duration)
+    {
+        isStopped = true;
+        rb.velocity = Vector2.zero;
+        yield return new WaitForSeconds(duration);
+        isStopped = false;
+    }
+
     public void StartSpeedBoost(float speedMultiplier, float boostDuration)
     {
         if (activeBoost != null)
             StopCoroutine(activeBoost);
-
         activeBoost = StartCoroutine(SpeedBoostCoroutine(speedMultiplier, boostDuration));
     }
 
     private IEnumerator SpeedBoostCoroutine(float speedMultiplier, float boostDuration)
     {
-        Debug.Log("Speed boost started! Multiplier: " + speedMultiplier);
         currentSpeed = moveSpeed * speedMultiplier;
-
         yield return new WaitForSeconds(boostDuration);
-
         currentSpeed = moveSpeed;
         activeBoost = null;
-        Debug.Log("Speed boost ended.");
     }
 }
