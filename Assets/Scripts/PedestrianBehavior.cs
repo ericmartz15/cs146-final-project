@@ -1,7 +1,6 @@
 // PedestrianBehavior.cs
 // Pedestrian walks back and forth across the road.
-// When hit by the bike, motorcycle, or bus, they spin and fly away.
-// Only the bike stops on impact.
+// When hit by the bike, motorcycle, bus, or BusSquare, they spin and fly away, then are removed.
 
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -120,13 +119,14 @@ public class PedestrianBehavior : MonoBehaviour
     {
         if (hasBeenHit) return;
 
-        bool hitByBike       = other.GetComponent<BikeController>()       != null;
-        bool hitByMotorcycle = other.GetComponent<MotorcycleBehavior>()   != null;
-        bool hitByBus        = other.GetComponent<BusBehavior>()          != null;
+        bool hitByBike       = other.GetComponent<BikeController>()     != null;
+        bool hitByMotorcycle = other.GetComponent<MotorcycleBehavior>() != null;
+        bool hitByBus        = other.GetComponent<BusBehavior>()        != null;
+        bool hitByBusSquare  = other.GetComponent<BusSquare>()          != null;
 
-        if (!hitByBike && !hitByMotorcycle && !hitByBus) return;
+        if (!hitByBike && !hitByMotorcycle && !hitByBus && !hitByBusSquare) return;
 
-        // Only the bike stops — motorcycles and buses keep moving
+        // Only the bike stops — other entities keep moving
         if (hitByBike)
         {
             BikeController bike = other.GetComponent<BikeController>();
@@ -143,6 +143,7 @@ public class PedestrianBehavior : MonoBehaviour
         rb.AddTorque(Random.Range(-spinForce, spinForce), ForceMode2D.Impulse);
 
         Invoke(nameof(StopSliding), slideStopTime);
+        Destroy(gameObject, bikeStopTime);
     }
 
     private void StopSliding()
