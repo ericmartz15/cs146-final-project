@@ -8,7 +8,7 @@ using UnityEngine.Tilemaps;
 public class PedestrianSpawner : MonoBehaviour
 {
     [Header("Spawning")]
-    [SerializeField] private GameObject pedestrianPrefab;
+    [SerializeField] private GameObject[] pedestrianPrefabs;
     [SerializeField] private Tilemap roadTilemap;
     [SerializeField] private int spawnCount = 10;
     [SerializeField] private float minDistanceFromPlayer = 3f;
@@ -23,9 +23,9 @@ public class PedestrianSpawner : MonoBehaviour
 
     private void SpawnPedestrians()
     {
-        if (pedestrianPrefab == null || roadTilemap == null)
+        if (pedestrianPrefabs == null || pedestrianPrefabs.Length == 0 || roadTilemap == null)
         {
-            Debug.LogError("PedestrianSpawner: Missing prefab or tilemap!");
+            Debug.LogError("PedestrianSpawner: Missing prefabs or tilemap!");
             return;
         }
 
@@ -49,7 +49,8 @@ public class PedestrianSpawner : MonoBehaviour
             if (player != null && Vector3.Distance(worldPos, player.position) < minDistanceFromPlayer)
                 continue;
 
-            GameObject pedestrian = Instantiate(pedestrianPrefab, worldPos, Quaternion.identity);
+            GameObject prefab = pedestrianPrefabs[Random.Range(0, pedestrianPrefabs.Length)];
+            GameObject pedestrian = Instantiate(prefab, worldPos, Quaternion.identity);
 
             // Initialize crossing behavior
             PedestrianBehavior behavior = pedestrian.GetComponent<PedestrianBehavior>();
