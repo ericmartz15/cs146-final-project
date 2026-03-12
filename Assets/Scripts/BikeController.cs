@@ -22,7 +22,6 @@ public class BikeController : MonoBehaviour
     private Rigidbody2D rb;
     private SpriteRenderer spriteRenderer;
     private Vector2 movement;
-    private PlayerHealth playerHealth;
 
     private bool isStopped = false;
 
@@ -39,7 +38,6 @@ public class BikeController : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
-        playerHealth = GetComponent<PlayerHealth>();
         rb.freezeRotation = true;
     }
 
@@ -103,8 +101,9 @@ public class BikeController : MonoBehaviour
             collision.gameObject.GetComponent<BusBehavior>() != null ||
             collision.gameObject.GetComponent<BusSquare>() != null)
         {
-            if (playerHealth != null && !playerHealth.IsDead)
-                playerHealth.TakeDamage(playerHealth.MaxLives);
+            PlayerHealth playerHealth = GetComponent<PlayerHealth>();
+            if (playerHealth != null)
+                playerHealth.TakeDamage();
         }
     }
 
