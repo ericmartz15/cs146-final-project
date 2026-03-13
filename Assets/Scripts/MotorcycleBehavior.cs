@@ -84,10 +84,10 @@ public class MotorcycleBehavior : MonoBehaviour
         if (!hasKilledPlayer && distToPlayer <= contactDamageRadius)
         {
             PlayerHealth playerHealth = player.GetComponent<PlayerHealth>();
-            if (playerHealth != null && !playerHealth.IsDead)
+            if (playerHealth != null)
             {
                 hasKilledPlayer = true;
-                playerHealth.TakeDamage(playerHealth.MaxLives); // always kills regardless of lives
+                playerHealth.TakeDamage();
                 rb.velocity = Vector2.zero;
                 currentPath = null;
             }

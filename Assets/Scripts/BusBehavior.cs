@@ -81,8 +81,8 @@ public class BusBehavior : MonoBehaviour
     {
         Debug.Log("Bus collided with: " + collision.gameObject.name);
         PlayerHealth playerHealth = collision.gameObject.GetComponent<PlayerHealth>();
-        if (playerHealth != null && !playerHealth.IsDead)
-            playerHealth.TakeDamage(playerHealth.MaxLives);
+        if (playerHealth != null)
+            playerHealth.TakeDamage();
     }
 
     private void OnDrawGizmosSelected()
